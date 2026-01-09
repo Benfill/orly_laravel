@@ -15,38 +15,12 @@ use Throwable;
 
 class Handler extends ExceptionHandler
 {
-    /**
-     * A list of exception types with their corresponding custom log levels.
-     *
-     * @var array<class-string<\Throwable>, \Psr\Log\LogLevel::*>
-     */
-    protected $levels = [
-        //
-    ];
-
-    /**
-     * A list of the exception types that are not reported.
-     *
-     * @var array<int, class-string<\Throwable>>
-     */
-    protected $dontReport = [
-        //
-    ];
-
-    /**
-     * A list of the inputs that are never flashed to the session on validation exceptions.
-     *
-     * @var array<int, string>
-     */
     protected $dontFlash = [
         'current_password',
         'password',
         'password_confirmation',
     ];
 
-    /**
-     * Register the exception handling callbacks for the application.
-     */
     public function register(): void
     {
         $this->reportable(function (Throwable $e) {
@@ -54,22 +28,21 @@ class Handler extends ExceptionHandler
         });
     }
 
-    /**
-     * Render an exception into an HTTP response.
-     */
     public function render($request, Throwable $exception)
     {
-        // Check if request expects JSON (API request)
-        if ($request->is('api/*') || $request->expectsJson()) {
+        // Force JSON response for ALL /api/* routes
+        if ($request->is('api/*')) {
+            return $this->handleApiException($request, $exception);
+        }
+
+        // Also check if request expects JSON
+        if ($request->expectsJson()) {
             return $this->handleApiException($request, $exception);
         }
 
         return parent::render($request, $exception);
     }
 
-    /**
-     * Handle API exceptions and return JSON responses
-     */
     private function handleApiException($request, Throwable $exception)
     {
         // Validation Exception
@@ -90,7 +63,7 @@ class Handler extends ExceptionHandler
             ], 401);
         }
 
-        // Authorization Exception (Forbidden)
+        // Authorization Exception
         if ($exception instanceof AuthorizationException) {
             return response()->json([
                 'success' => false,
@@ -99,7 +72,7 @@ class Handler extends ExceptionHandler
             ], 403);
         }
 
-        // Model Not Found Exception
+        // Model Not Found
         if ($exception instanceof ModelNotFoundException) {
             return response()->json([
                 'success' => false,
@@ -108,7 +81,7 @@ class Handler extends ExceptionHandler
             ], 404);
         }
 
-        // Route Not Found Exception
+        // Route Not Found
         if ($exception instanceof RouteNotFoundException) {
             return response()->json([
                 'success' => false,
@@ -117,7 +90,7 @@ class Handler extends ExceptionHandler
             ], 401);
         }
 
-        // Not Found Exception
+        // Not Found
         if ($exception instanceof NotFoundHttpException) {
             return response()->json([
                 'success' => false,
@@ -126,17 +99,19 @@ class Handler extends ExceptionHandler
             ], 404);
         }
 
-        // Method Not Allowed Exception
+        // Method Not Allowed - THIS IS YOUR CURRENT ERROR
         if ($exception instanceof MethodNotAllowedHttpException) {
+            $allowedMethods = $exception->getHeaders()['Allow'] ?? 'Unknown';
             return response()->json([
                 'success' => false,
                 'message' => 'Method not allowed.',
-                'error' => 'The ' . $request->method() . ' method is not supported for this endpoint.',
-                'allowed_methods' => $exception->getHeaders()['Allow'] ?? []
+                'error' => 'The ' . $request->method() . ' method is not supported for this route.',
+                'allowed_methods' => $allowedMethods,
+                'hint' => 'This route only accepts: ' . $allowedMethods
             ], 405);
         }
 
-        // HTTP Exception (covers 400, 500, etc.)
+        // HTTP Exception
         if ($exception instanceof HttpException) {
             return response()->json([
                 'success' => false,
@@ -145,7 +120,7 @@ class Handler extends ExceptionHandler
             ], $exception->getStatusCode());
         }
 
-        // Generic Exception - catch all
+        // Generic Exception
         $statusCode = method_exists($exception, 'getStatusCode')
             ? $exception->getStatusCode()
             : 500;
@@ -156,7 +131,6 @@ class Handler extends ExceptionHandler
             'error' => $exception->getMessage() ?: 'Internal server error.'
         ];
 
-        // Include detailed error info only in debug mode
         if (config('app.debug')) {
             $response['debug'] = [
                 'exception' => get_class($exception),
@@ -169,9 +143,6 @@ class Handler extends ExceptionHandler
         return response()->json($response, $statusCode);
     }
 
-    /**
-     * Convert an authentication exception into a response.
-     */
     protected function unauthenticated($request, AuthenticationException $exception)
     {
         if ($request->is('api/*') || $request->expectsJson()) {
