@@ -1,0 +1,411 @@
+## API Documentation
+
+All endpoints are prefixed with:
+
+```
+/api
+```
+
+All requests and responses use **JSON**.
+
+---
+
+## Authentication
+
+### Register
+
+**Endpoint**
+
+```
+POST /api/register
+```
+
+**Request Body**
+
+```json
+{
+  "name": "John Doe",
+  "email": "john@example.com",
+  "password": "password",
+  "password_confirmation": "password"
+}
+```
+
+**Response (201)**
+
+```json
+{
+  "user": {
+    "id": 1,
+    "name": "John Doe",
+    "email": "john@example.com"
+  },
+  "token": {
+    "access_token": "eyJ0eXAiOiJKV1QiLCJhbGci...",
+    "token_type": "Bearer"
+  }
+}
+```
+
+---
+
+### Login
+
+```
+POST /api/login
+```
+
+**Request Body**
+
+```json
+{
+  "email": "john@example.com",
+  "password": "password"
+}
+```
+
+**Response (200)**
+
+```json
+{
+  "access_token": "eyJ0eXAiOiJKV1QiLCJhbGci...",
+  "token_type": "Bearer"
+}
+```
+
+---
+
+### Logout (Authenticated)
+
+```
+POST /api/logout
+```
+
+**Headers**
+
+```
+Authorization: Bearer {access_token}
+```
+
+**Response**
+
+```json
+{
+  "message": "Logged out successfully"
+}
+```
+
+---
+
+### Get Authenticated User
+
+```
+GET /api/me
+```
+
+**Headers**
+
+```
+Authorization: Bearer {access_token}
+```
+
+**Response**
+
+```json
+{
+  "id": 1,
+  "name": "John Doe",
+  "email": "john@example.com",
+  "role": "customer"
+}
+```
+
+---
+
+## Categories
+
+### Get All Categories
+
+```
+GET /api/categories
+```
+
+**Response**
+
+```json
+[
+  {
+    "id": 1,
+    "name": "Electronics"
+  }
+]
+```
+
+---
+
+### Get Category by ID
+
+```
+GET /api/categories/{id}
+```
+
+---
+
+### Create Category (Staff Only)
+
+```
+POST /api/categories
+```
+
+**Headers**
+
+```
+Authorization: Bearer {staff_token}
+```
+
+**Body**
+
+```json
+{
+  "name": "Books"
+}
+```
+
+---
+
+### Update Category (Staff Only)
+
+```
+PUT /api/categories/{id}
+```
+
+---
+
+### Delete Category (Staff Only)
+
+```
+DELETE /api/categories/{id}
+```
+
+---
+
+## Products
+
+### Get All Products
+
+```
+GET /api/products
+```
+
+---
+
+### Get Product by ID
+
+```
+GET /api/products/{id}
+```
+
+---
+
+### Create Product (Staff Only)
+
+```
+POST /api/products
+```
+
+**Body**
+
+```json
+{
+  "name": "Laptop",
+  "price": 1200,
+  "stock": 10,
+  "category_id": 1
+}
+```
+
+---
+
+### Update Product (Staff Only)
+
+```
+PUT /api/products/{id}
+```
+
+---
+
+### Delete Product (Staff Only)
+
+```
+DELETE /api/products/{id}
+```
+
+---
+
+## Cart (Authenticated)
+
+### View Cart
+
+```
+GET /api/cart
+```
+
+---
+
+### Add Item to Cart
+
+```
+POST /api/cart/items
+```
+
+**Body**
+
+```json
+{
+  "product_id": 1,
+  "quantity": 2
+}
+```
+
+---
+
+### Update Cart Item
+
+```
+PUT /api/cart/items/{itemId}
+```
+
+**Body**
+
+```json
+{
+  "quantity": 3
+}
+```
+
+---
+
+### Remove Cart Item
+
+```
+DELETE /api/cart/items/{itemId}
+```
+
+---
+
+## Orders
+
+### Place Order
+
+```
+POST /api/orders
+```
+
+**Response**
+
+```json
+{
+  "order_id": 15,
+  "status": "pending",
+  "total": 350.00
+}
+```
+
+---
+
+### Get Order Details
+
+```
+GET /api/orders/{orderId}
+```
+
+---
+
+## Payments
+
+### Process Payment for Order
+
+```
+POST /api/orders/{orderId}/payment
+```
+
+**Body**
+
+```json
+{
+  "payment_method": "card",
+  "amount": 350.00
+}
+```
+
+**Response**
+
+```json
+{
+  "status": "paid",
+  "transaction_id": "TXN-982734"
+}
+```
+
+---
+
+## Users Management (Staff Only)
+
+### Get All Users
+
+```
+GET /api/users
+```
+
+---
+
+### Get User by ID
+
+```
+GET /api/users/{id}
+```
+
+---
+
+### Create User
+
+```
+POST /api/users
+```
+
+---
+
+### Update User
+
+```
+PUT /api/users/{id}
+```
+
+---
+
+### Delete User
+
+```
+DELETE /api/users/{id}
+```
+
+---
+
+## Error Responses
+
+### Unauthorized
+
+```json
+{
+  "message": "Unauthenticated."
+}
+```
+
+### Forbidden (Non-staff access)
+
+```json
+{
+  "message": "This action is unauthorized."
+}
+```
+
