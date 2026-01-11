@@ -14,6 +14,14 @@ class ProductController extends Controller
         $this->productService = $productService;
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/products",
+     *     tags={"Products"},
+     *     summary="Get all products",
+     *     @OA\Response(response=200, description="Success")
+     * )
+     */
     public function index(Request $request)
     {
         $categoryId = $request->query('category_id');
@@ -21,6 +29,21 @@ class ProductController extends Controller
         return response()->json($products);
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/products/{id}",
+     *     tags={"Products"},
+     *     summary="Get product by ID",
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(response=200, description="Success"),
+     *     @OA\Response(response=404, description="Not found")
+     * )
+     */
     public function show($id)
     {
         $product = $this->productService->getProductById($id);

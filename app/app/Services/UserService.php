@@ -4,7 +4,7 @@ namespace App\Services;
 
 use App\Models\User;
 
-class userService
+class UserService
 {
    public function getAllUsers()
    {
