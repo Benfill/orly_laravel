@@ -26,6 +26,7 @@ class PaymentService
         $payment = Payment::find($id);
         if ($payment) {
             $payment->update($data);
+            $payment->refresh();
             return $payment;
         }
         return null;

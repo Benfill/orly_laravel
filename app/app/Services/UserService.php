@@ -26,6 +26,7 @@ class UserService
        $user = User::find($id);
        if ($user) {
            $user->update($data);
+           $user->refresh();
            return $user;
        }
        return null;

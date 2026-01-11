@@ -25,6 +25,7 @@ class CartItemService
        $cartItem = CartItem::find($id);
        if ($cartItem) {
            $cartItem->update($data);
+           $cartItem->refresh();
            return $cartItem;
        }
        return null;

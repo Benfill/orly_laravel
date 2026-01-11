@@ -24,6 +24,7 @@ class CategoryService
        $category = Category::find($id);
        if ($category) {
            $category->update($data);
+           $category->refresh();
            return $category;
        }
        return null;

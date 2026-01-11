@@ -73,9 +73,12 @@ class OrderService
             ]);
 
             $order->update(['status' => 'completed']);
+            $order->refresh();
         } else {
             $payment->update(['status' => 'failed']);
+            $payment->refresh();
             $order->update(['status' => 'failed']);
+            $order->refresh();
         }
 
         return $payment;

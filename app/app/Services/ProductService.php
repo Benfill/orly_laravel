@@ -45,6 +45,7 @@ class ProductService
         $product = Product::find($id);
         if ($product) {
             $product->update($data);
+            $product->refresh();
         }
         return $product;
     }
