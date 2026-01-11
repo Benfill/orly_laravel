@@ -1,4 +1,6 @@
 /vendor/
+# OAuth / Passport keys
+app/app/secrets/oauth/
 node_modules/
 npm-debug.log
 yarn-error.log

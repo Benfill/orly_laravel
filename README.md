@@ -3,20 +3,20 @@
 ## Overview
 
 **Orly** is a RESTful backend API built with **Laravel** for an e-commerce platform.
-It provides authentication using **Laravel Passport**, product and category management, shopping cart functionality, order processing, and payment tracking.
+It provides authentication using **Laravel Passport**, product and category management, shopping cart functionality, order processing, and payment handling.
 
-This backend is designed to be consumed by a frontend application (Web, Mobile, or Desktop).
+This backend is designed to be consumed by Web, Mobile, or Desktop clients.
 
 ---
 
 ## Tech Stack
 
-* **PHP** 8.x
-* **Laravel** 10+
-* **Laravel Passport** (OAuth2 authentication)
-* **MySQL**
-* **Eloquent ORM**
-* **REST API architecture**
+* PHP 8.x
+* Laravel 10+
+* Laravel Passport (OAuth2)
+* MySQL
+* Eloquent ORM
+* RESTful API architecture
 
 ---
 
@@ -26,31 +26,24 @@ This backend is designed to be consumed by a frontend application (Web, Mobile, 
 
 * User registration and login
 * OAuth2 authentication with Laravel Passport
-* Access tokens & refresh tokens
-* Automatic `Customer` creation on user registration
+* Token-based access (`auth:api`)
+* Role-based access control (`staff` middleware)
 
 ### Products & Categories
 
-* CRUD operations for products
-* Product categorization
-* Stock & pricing management
+* Public product and category listing
+* Full CRUD operations for staff users
 
 ### Cart System
 
-* User cart creation
-* Add / update / remove cart items
-* One active cart per customer
+* One cart per authenticated user
+* Add, update, and remove cart items
 
-### Orders
+### Orders & Payments
 
-* Convert cart to order
-* Order items persistence
-* Order status management
-
-### Payments
-
-* Payment records linked to orders
-* Payment status tracking
+* Place orders from cart
+* View order details
+* Process payments per order
 
 ---
 
@@ -62,23 +55,19 @@ app/
 │   ├── Controllers/
 │   │   ├── AuthController.php
 │   │   ├── ProductController.php
+│   │   ├── CategoryController.php
 │   │   ├── CartController.php
 │   │   ├── OrderController.php
-│   │   └── PaymentController.php
+│   │   └── UserController.php
 │
 ├── Models/
 │   ├── User.php
-│   ├── Customer.php
 │   ├── Product.php
 │   ├── Category.php
 │   ├── Cart.php
 │   ├── CartItem.php
 │   ├── Order.php
-│   ├── OrderItem.php
-│   └── Payment.php
-│
-├── Providers/
-│   └── AppServiceProvider.php
+│   └── OrderItem.php
 │
 database/
 ├── migrations/
@@ -109,7 +98,7 @@ cp .env.example .env
 php artisan key:generate
 ```
 
-Update `.env` with your database credentials:
+Configure your database:
 
 ```env
 DB_DATABASE=orly_laravel
@@ -133,20 +122,11 @@ php artisan migrate:fresh --seed
 php artisan passport:install
 ```
 
-If you are using custom key storage:
-
-```php
-// AppServiceProvider.php
-Passport::loadKeysFrom(__DIR__.'/../secrets/oauth');
-```
-
 ---
 
 ## API Authentication
 
-All protected routes require a **Bearer Token**.
-
-### Example Header
+All protected endpoints require a **Bearer Token**.
 
 ```
 Authorization: Bearer {access_token}
@@ -154,53 +134,113 @@ Authorization: Bearer {access_token}
 
 ---
 
-## Main API Endpoints
+## API Endpoints
 
-### Authentication
-
-```
-POST   /api/register
-POST   /api/login
-POST   /api/logout
-```
-
-### Products
+Base URL:
 
 ```
-GET    /api/products
-GET    /api/products/{id}
-POST   /api/products
-PUT    /api/products/{id}
-DELETE /api/products/{id}
+/api
 ```
 
-### Cart
+---
+
+### Public Endpoints (No Authentication)
+
+#### Authentication
 
 ```
-GET    /api/cart
-POST   /api/cart/items
-PUT    /api/cart/items/{id}
-DELETE /api/cart/items/{id}
+POST   /register
+POST   /login
 ```
 
-### Orders
+#### Categories
 
 ```
-POST   /api/orders
-GET    /api/orders
-GET    /api/orders/{id}
+GET    /categories
+GET    /categories/{id}
 ```
 
-### Payments
+#### Products
 
 ```
-POST   /api/payments
-GET    /api/payments/{order_id}
+GET    /products
+GET    /products/{id}
 ```
+
+---
+
+### Authenticated User Endpoints (`auth:api`)
+
+#### Authentication
+
+```
+POST   /logout
+GET    /me
+```
+
+#### Cart
+
+```
+GET    /cart
+POST   /cart/items
+PUT    /cart/items/{itemId}
+DELETE /cart/items/{itemId}
+```
+
+#### Orders
+
+```
+POST   /orders
+GET    /orders/{orderId}
+```
+
+#### Payments
+
+```
+POST   /orders/{orderId}/payment
+```
+
+---
+
+### Staff-Only Endpoints (`auth:api + staff`)
+
+#### Categories Management
+
+```
+POST   /categories
+PUT    /categories/{id}
+DELETE /categories/{id}
+```
+
+#### Products Management
+
+```
+POST   /products
+PUT    /products/{id}
+DELETE /products/{id}
+```
+
+#### Users Management
+
+```
+GET    /users
+GET    /users/{id}
+POST   /users
+PUT    /users/{id}
+DELETE /users/{id}
+```
+
+---
+
+## Middleware
+
+* `auth:api` → Ensures authenticated access using Passport
+* `staff` → Restricts access to staff/admin users only
 
 ---
 
 ## License
 
-This project is for educational and professional use.
-You are free to modify and extend it.
+This project is intended for educational and professional use.
+You are free to modify and extend it as needed.
+
