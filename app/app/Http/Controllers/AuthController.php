@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use App\Services\AuthService;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cookie;
+
+
 
 class AuthController extends Controller
 {
@@ -37,6 +40,7 @@ class AuthController extends Controller
     /**
      * Login user (Passport token)
      */
+
     public function login(Request $request)
     {
         $validated = $request->validate([
@@ -49,24 +53,42 @@ class AuthController extends Controller
             $validated['password']
         );
 
-        return response()->json([
-            'user' => $data['user'],
-            'access_token' => $data['token'],
-            'token_type' => 'Bearer',
-        ]);
+        $cookie = cookie(
+            'access_token',
+            $data['token'],
+            60 * 24,
+            '/',
+            null,
+            false,
+            true,
+            false,
+            'Lax'
+        );
+
+        return response()
+            ->json([
+                'message' => 'success',
+                'user' => $data['user'],
+            ])
+            ->withCookie($cookie);
+
     }
+
 
     /**
      * Logout user
      */
-    public function logout(Request $request)
+
+    public function logout(Request $request): JsonResponse
     {
         $this->authService->logout($request->user());
 
-        return response()->json([
-            'message' => 'Logged out successfully',
-        ]);
+        return response()
+            ->json(['message' => 'Logged out successfully'])
+            ->withCookie(Cookie::forget('access_token'));
     }
+
+
 
     /**
      * Get authenticated user

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\PassportCookieAuth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProductController;
@@ -19,7 +20,7 @@ Route::get('/categories/{id}', [CategoryController::class, 'show']);
 Route::get('/products', [ProductController::class, 'index']);
 Route::get('/products/{id}', [ProductController::class, 'show']);
 
-Route::middleware('auth:api')->group(function () {
+Route::middleware([PassportCookieAuth::class, 'auth:api'])->group(function () {
 
     // Auth
     Route::post('/logout', [AuthController::class, 'logout']);
@@ -39,7 +40,7 @@ Route::middleware('auth:api')->group(function () {
     Route::post('/orders/{orderId}/payment', [OrderController::class, 'processPayment']);
 });
 
-Route::middleware(['auth:api', 'staff'])->group(function () {
+Route::middleware([PassportCookieAuth::class, 'auth:api', 'staff'])->group(function () {
 
     // Categories
     Route::post('/categories', [CategoryController::class, 'store']);
