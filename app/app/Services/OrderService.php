@@ -34,7 +34,7 @@ class OrderService
             ]);
 
             // Create order items
-            foreach ($cart->items as $cartItem) {
+            foreach($cart->items as $cartItem) {
                 OrderItem::create([
                     'order_id' => $order->id,
                     'product_id' => $cartItem->product->id,

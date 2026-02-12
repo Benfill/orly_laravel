@@ -22,6 +22,9 @@ class OrderController extends Controller
     {
         $validated = $request->validate([
             'payment_method' => 'required|string|in:credit_card,paypal,cash',
+            'customer_id' => 'required|exists:customers,',
+            'status' => 'required|string',
+            'total_amount' => 'required|numeric',
         ]);
 
         $customerId = Auth::user()->customer->id;
